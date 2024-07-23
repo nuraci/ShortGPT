@@ -51,8 +51,9 @@ class VideoAutomationUI(AbstractComponentUI):
 
     def is_key_missing(self):
         openai_key = ApiKeyManager.get_api_key("OPENAI")
-        if not openai_key:
-            return "Your OpenAI key is missing. Please go to the config tab and enter the API key."
+        anthropic_key = ApiKeyManager.get_api_key("ANTHROPIC")
+        if not openai_key and not anthropic_key:
+            return "Your LLM key is missing. Please go to the config tab and enter the API key."
 
         pexels_api_key = ApiKeyManager.get_api_key("PEXELS")
         if not pexels_api_key:

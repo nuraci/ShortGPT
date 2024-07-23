@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 load_dotenv('./.env')
 class ApiProvider(enum.Enum):
     OPENAI = "OPENAI"
-    ELEVEN_LABS = "ELEVEN LABS"
+    ANTHROPIC = "ANTHROPIC"
+    GOOGLE = "GOOGLE"
+    ELEVEN_LABS = "ELEVENLABS"
     PEXELS = "PEXELS"
 
 
@@ -23,7 +25,8 @@ class ApiKeyManager:
             return api_key
 
         # If not found in the database, check in the environment variables
-        env_key = key.replace(" ", "_").upper()
+        #env_key = key.replace(" ", "_").upper()
+        env_key = key + "_API_KEY"
         api_key = os.environ.get(env_key)
         if api_key:
             return api_key

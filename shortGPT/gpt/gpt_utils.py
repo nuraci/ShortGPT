@@ -4,11 +4,11 @@ import re
 from time import sleep, time
 
 import openai
+import anthropic
 import tiktoken
 import yaml
 
 from shortGPT.config.api_db import ApiKeyManager
-
 
 def num_tokens_from_messages(texts, model="gpt-3.5-turbo-0301"):
     """Returns the number of tokens used by a list of messages."""
@@ -69,6 +69,50 @@ def open_file(filepath):
         return infile.read()
 
 
+def llm_completion(chat_prompt="", system="You are an AI that can give the answer to anything", temp=0.2, model="gclaude-3-5-sonnet-20240620", max_tokens=4096, remove_nl=True, conversation=None):
+
+    client = anthropic.Anthropic (
+        api_key=ApiKeyManager.get_api_key("ANTHROPIC")
+    )
+    max_retry = 5
+    retry = 0
+    while True:
+        try:
+            if conversation:
+                messages = conversation
+            else:
+                message = client.messages.create(
+                    model="claude-3-5-sonnet-20240620",
+                    max_tokens=max_tokens,
+                    temperature=temp,
+                    system=system,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": chat_prompt,
+                                }
+                            ]
+                        }
+                    ]
+                )
+            text = message.content[0].text
+            if remove_nl:
+                text = re.sub('\s+', ' ', text)
+            filename = '%s_llm.txt' % time()
+            if not os.path.exists('.logs/gpt_logs'):
+                os.makedirs('.logs/gpt_logs')
+            with open('.logs/gpt_logs/%s' % filename, 'w', encoding='utf-8') as outfile:
+                outfile.write(f"System prompt: ===\n{system}\n===\n"+f"Chat prompt: ===\n{chat_prompt}\n===\n" + f'RESPONSE:\n====\n{text}\n===\n')
+            return text
+        except Exception as oops:
+            retry += 1
+            if retry >= max_retry:
+                raise Exception("LLM error: %s" % oops)
+            print('Error communicating with LLM:', oops)
+            sleep(1)
 def gpt3Turbo_completion(chat_prompt="", system="You are an AI that can give the answer to anything", temp=0.7, model="gpt-3.5-turbo", max_tokens=1000, remove_nl=True, conversation=None):
     openai.api_key = ApiKeyManager.get_api_key("OPENAI")
     max_retry = 5

@@ -3,7 +3,7 @@ import json
 def getImageQueryPairs(captions,n=15 ,maxTime=2):
     chat, _ = gpt_utils.load_local_yaml_prompt('prompt_templates/editing_generate_images.yaml')
     prompt = chat.replace('<<CAPTIONS TIMED>>', f"{captions}").replace("<<NUMBER>>", f"{n}")
-    res = gpt_utils.gpt3Turbo_completion(chat_prompt=prompt)
+    res = gpt_utils.llm_completion(chat_prompt=prompt)
     imagesCouples = ('{'+res).replace('{','').replace('}','').replace('\n', '').split(',')
     pairs = []
     t0 = 0
@@ -33,7 +33,7 @@ def getVideoSearchQueriesTimed(captions_timed):
     out = [[[0,0],""]]
     while out[-1][0][1] != end:
         try:
-            out = json.loads(gpt_utils.gpt3Turbo_completion(chat_prompt=chat, system=system, temp=1).replace("'", '"'))
+            out = json.loads(gpt_utils.llm_completion(chat_prompt=chat, system=system, temp=0).replace("'", '"'))
         except Exception as e:
             print(e)
             print("not the right format")

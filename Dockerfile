@@ -2,6 +2,7 @@
 FROM python:3.11-bullseye
 RUN apt-get update && apt-get install -y \
     ffmpeg \
+    libx264-dev \
     imagemagick \
     ghostscript \
     fonts-roboto \

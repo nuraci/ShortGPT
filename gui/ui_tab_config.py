@@ -31,22 +31,26 @@ class ConfigUI(AbstractComponentUI):
                 raise gr.Error(e.args[0])
         return remaining_chars
 
-    def save_keys(self, openai_key, eleven_key, pexels_key):
+    def save_keys(self, openai_key, anthropic_key, eleven_key, pexels_key):
         '''Save the keys in the database'''
         if (self.api_key_manager.get_api_key('OPENAI') != openai_key):
             self.api_key_manager.set_api_key("OPENAI", openai_key)
+        if (self.api_key_manager.get_api_key('ANTHROPIC') != anthropic_key):
+            self.api_key_manager.set_api_key("ANTHROPIC", anthropic_key)
         if (self.api_key_manager.get_api_key('PEXELS') != pexels_key):
             self.api_key_manager.set_api_key("PEXELS", pexels_key)
         if (self.api_key_manager.get_api_key('ELEVEN LABS') != eleven_key):
             self.api_key_manager.set_api_key("ELEVEN LABS", eleven_key)
             new_eleven_voices = AssetComponentsUtils.getElevenlabsVoices()
             return gr.Textbox.update(value=openai_key),\
+                gr.Textbox.update(value=anthropic_key),\
                 gr.Textbox.update(value=eleven_key),\
                 gr.Textbox.update(value=pexels_key),\
                 gr.Radio.update(choices=new_eleven_voices),\
                 gr.Radio.update(choices=new_eleven_voices)
 
         return gr.Textbox.update(value=openai_key),\
+            gr.Textbox.update(value=anthropic_key),\
             gr.Textbox.update(value=eleven_key),\
             gr.Textbox.update(value=pexels_key),\
             gr.Radio.update(visible=True),\
@@ -68,25 +72,34 @@ class ConfigUI(AbstractComponentUI):
 
     def create_ui(self):
         '''Create the config UI'''
+        api_key = "none"
         with gr.Tab("Config") as config_ui:
             with gr.Row():
                 with gr.Column():
                     with gr.Row():
-                        openai_textbox = gr.Textbox(value=self.api_key_manager.get_api_key("OPENAI"), label=f"OPENAI API KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
+                        api_key = self.api_key_manager.get_api_key("OPENAI")
+                        openai_textbox = gr.Textbox(value=api_key, label=f"OPENAI API KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
                         show_openai_key = gr.Button("Show", size="sm", scale=1)
-                        show_openai_key.click(self.on_show, [show_openai_key], [openai_textbox, show_openai_key])
+                        show_openai_key.click(self.on_show, [show_openai_key], [openai_textbox, show_openai_key])    
                     with gr.Row():
-                        eleven_labs_textbox = gr.Textbox(value=self.api_key_manager.get_api_key("ELEVEN LABS"), label=f"ELEVEN LABS API KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
+                        api_key = self.api_key_manager.get_api_key("ANTHROPIC")
+                        anthropic_textbox = gr.Textbox(value=api_key, label=f"ANTHROPIC API KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
+                        show_anthropic_key = gr.Button("Show", size="sm", scale=1)
+                        show_anthropic_key.click(self.on_show, [show_anthropic_key], [anthropic_textbox, show_anthropic_key])    
+                    with gr.Row():
+                        api_key = self.api_key_manager.get_api_key("ELEVEN LABS")
+                        eleven_labs_textbox = gr.Textbox(value=api_key, label=f"ELEVEN LABS API KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
                         eleven_characters_remaining = gr.Textbox(value=self.get_eleven_remaining(), label=f"CHARACTERS REMAINING", show_label=True, interactive=False, type="text", scale=40)
                         show_eleven_key = gr.Button("Show", size="sm", scale=1)
                         show_eleven_key.click(self.on_show, [show_eleven_key], [eleven_labs_textbox, show_eleven_key])
                     with gr.Row():
-                        pexels_textbox = gr.Textbox(value=self.api_key_manager.get_api_key("PEXELS"), label=f"PEXELS KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
+                        api_key = self.api_key_manager.get_api_key("PEXELS")
+                        pexels_textbox = gr.Textbox(value=api_key, label=f"PEXELS KEY", show_label=True, interactive=True, show_copy_button=True, type="password", scale=40)
                         show_pexels_key = gr.Button("Show", size="sm", scale=1)
                         show_pexels_key.click(self.on_show, [show_pexels_key], [pexels_textbox, show_pexels_key])
                     save_button = gr.Button("save", size="sm", scale=1)
                     save_button.click(self.verify_eleven_key, [eleven_labs_textbox, eleven_characters_remaining], [eleven_characters_remaining]).success(
-                        self.save_keys, [openai_textbox, eleven_labs_textbox, pexels_textbox], [openai_textbox, eleven_labs_textbox, pexels_textbox, AssetComponentsUtils.voiceChoice(), AssetComponentsUtils.voiceChoiceTranslation()])
+                        self.save_keys, [openai_textbox, anthropic_textbox, eleven_labs_textbox, pexels_textbox], [openai_textbox, anthropic_textbox, eleven_labs_textbox, pexels_textbox, AssetComponentsUtils.voiceChoice(), AssetComponentsUtils.voiceChoiceTranslation()])
                     save_button.click(lambda _: gr.Button.update(value="Keys Saved !"), [], [save_button])
                     save_button.click(self.back_to_normal, [], [save_button])
         return config_ui

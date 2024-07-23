@@ -3,7 +3,7 @@ import json
 def generateFacts(facts_type):
     chat, system = gpt_utils.load_local_yaml_prompt('prompt_templates/facts_generator.yaml')
     chat = chat.replace("<<FACTS_TYPE>>", facts_type)
-    result = gpt_utils.gpt3Turbo_completion(chat_prompt=chat, system=system, temp=1.3)
+    result = gpt_utils.llm_completion(chat_prompt=chat, system=system, temp=0.3)
     return result
 
 def generateFactSubjects(n):
@@ -12,7 +12,7 @@ def generateFactSubjects(n):
     chat = chat.replace("<<N>>", f"{n}")
     count = 0
     while len(out) != n:
-        result = gpt_utils.gpt3Turbo_completion(chat_prompt=chat, system=system, temp=1.69)
+        result = gpt_utils.llm_completion(chat_prompt=chat, system=system, temp=0.6)
         count+=1
         try:
             out = json.loads(result.replace("'", '"'))
